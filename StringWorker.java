@@ -1,10 +1,19 @@
+package Try1;
 
 import java.io.*;
 
+/**
+ * Performs specific operations with strings.
+ */
 public class StringWorker {
     private String codeWord;
     private boolean[] openPositions;
 
+    /**
+     * Notes in openPositions all positions witch contains the symbol
+     * @param symbol guessed symbol
+     * @return true if the symbol don't find and false if it finds
+     */
     public boolean findAllSymb(char symbol) {
         boolean mistake = true;
         for (int i = 0; i < codeWord.length(); i++) {
@@ -16,6 +25,13 @@ public class StringWorker {
         return mistake;
     }
 
+    public String getCodeWord() {
+        return codeWord;
+    }
+    public void setCodeWord(String word) {
+        codeWord = word;
+    }
+
     public boolean[] getOpenPositions() {
         return openPositions;
     }
@@ -24,6 +40,10 @@ public class StringWorker {
         return codeWord.length();
     }
 
+    /**
+     * Check the user victory
+     * @return true if user wins and false if user lose
+     */
     public boolean checkWin() {
         for (int i = 0; i < codeWord.length(); i++) {
             if (openPositions[i] == false) {
@@ -41,6 +61,10 @@ public class StringWorker {
         }
     }
 
+    /**
+     * Take random word frome file and guess it to user
+     * @return guessed word
+     */
     public String chooseWord() {
         int wordCount = 0;
         String line = null;
@@ -75,6 +99,10 @@ public class StringWorker {
         return codeWord;
     }
 
+    /**
+     * Give string witch must be visible to user
+     * @return the visible string in necessary format
+     */
     public String getGuessedWord() {
         StringBuffer guessedWord = new StringBuffer(codeWord + codeWord);
         for (int i = 0; i < codeWord.length(); i++) {

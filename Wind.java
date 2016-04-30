@@ -1,3 +1,4 @@
+package Try1;
 
 import javax.swing.*;
 import javax.swing.plaf.metal.MetalLookAndFeel;
@@ -5,12 +6,12 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 
+/**
+ * create frame for game and contains main logic
+ */
 public class Wind {
     private JFrame frame = null;
     private JMenuBar menuBar = null;
@@ -24,6 +25,8 @@ public class Wind {
     private String[] imageAdresses;
     private boolean mistake = false;
     private boolean endGame = false;
+    private boolean botFlag = false;
+    private JMenuItem replayItem;
 
     public Wind() {
         code = new StringWorker();
@@ -34,10 +37,13 @@ public class Wind {
         windowMenu = new JMenu("Window");
         JMenuItem quitItem = new JMenuItem("Quit");
         JMenuItem botItem = new JMenuItem("Bot");
+        replayItem = new JMenuItem("Open saved game");
         quitItem.addActionListener(new QuitButtonListener());
         botItem.addActionListener(new BotListener());
+        replayItem.addActionListener(new ReplayListener());
         windowMenu.add(quitItem);
         windowMenu.add(botItem);
+        windowMenu.add(replayItem);
 
         viewMenu = new JMenu("View");
         JMenu lookAndFeel = new JMenu("LookAndFeel");
@@ -48,6 +54,7 @@ public class Wind {
         lookAndFeel.add(itemMetal);
         lookAndFeel.add(itemSystem);
         viewMenu.add(lookAndFeel);
+
 
         menuBar.add(windowMenu);
         menuBar.add(viewMenu);
@@ -66,6 +73,11 @@ public class Wind {
             imageAdresses[i] = address + Integer.toString(i) + ".jpg";
     }
 
+    /**
+     * Set image on the frame, choose word for guessing.
+     * Set elements of the frame.
+     * Display the frame.
+     */
     public void go() {
         imageLabel.setIcon(new ImageIcon(imageAdresses[0]));
         code.inicialise();
@@ -84,6 +96,9 @@ public class Wind {
         frame.setVisible(true);
     }
 
+    /**
+     * Specifies the initial conditions to restart the game.
+     */
     public void restart() {
         countOfTry = 6;
         frame.remove(theWord);
@@ -94,8 +109,12 @@ public class Wind {
         theWord = new JLabel();
         panel = new JPanel();
         imageLabel = new JLabel();
+        replayItem.setEnabled(true);
     }
 
+    /**
+     * Create new button panel with alphabet.
+     */
     public void createButtonPanel() {
         panelBut = new JPanel();
         panelBut.setLayout(new GridLayout(8, 3));
@@ -110,6 +129,9 @@ public class Wind {
         }
     }
 
+    /**
+     * Activate all buttons.
+     */
     public void activateButtonPanel() {
         for (int i = 0; i < 26; i++) {
             alphabet[i].setEnabled(true);
@@ -117,6 +139,9 @@ public class Wind {
         }
     }
 
+    /**
+     * Set font settings for displayed word.
+     */
     public void setLabelFont() {
         Font font = new Font("Century Gothic", Font.BOLD, 25);
         theWord.setVerticalAlignment(JLabel.CENTER);
@@ -125,6 +150,9 @@ public class Wind {
         theWord.setForeground(Color.BLACK);
     }
 
+    /**
+     * Check end of game. Offer to restart the game.
+     */
     public void checkEndGame() {
 
         int choice = -1;
@@ -148,12 +176,18 @@ public class Wind {
 
     class MyButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent event) {
+            replayItem.setEnabled(false);
             char guessSymbol = event.getActionCommand().charAt(0);
             ((JButton) event.getSource()).setEnabled(false);
             findLetter(guessSymbol);
         }
     }
 
+    /**
+     * Find guessed symbol in the word, controls cont of try,
+     * set new text on the label and repaint frame.
+     * @param guessSymbol is a symbol chosen by the user
+     */
     private void findLetter(char guessSymbol){
         mistake = code.findAllSymb(guessSymbol);
         if (mistake == true) {
@@ -162,7 +196,9 @@ public class Wind {
         imageLabel.setIcon(new ImageIcon(imageAdresses[6 - countOfTry]));
         theWord.setText(code.getGuessedWord());
         frame.repaint();
-        checkEndGame();
+        if(!botFlag) {
+            checkEndGame();
+        }
     }
 
     class QuitButtonListener implements ActionListener {
@@ -176,7 +212,23 @@ public class Wind {
         public void actionPerformed(ActionEvent event) {
             endGame = false;
             Bot bot = new Bot();
+            botFlag = true;
+            bot.setDictionary();
             bot.startGame();
+            bot.saveGame();
+            checkEndGame();
+            botFlag = false;
+        }
+    }
+
+    class ReplayListener implements ActionListener  {
+        public void actionPerformed(ActionEvent event)  {
+            Bot bot = new Bot();
+            botFlag = true;
+            //restart();
+            bot.replayGame();
+            checkEndGame();;
+            botFlag = false;
         }
     }
 
@@ -201,14 +253,20 @@ public class Wind {
         }
     }
 
+    /**
+     * Discribe bot's behavior
+     */
     private class Bot {
         private ArrayList<String> dictionary;
+        private ArrayList<String> notation;
         int wordsLength = 0;
 
-        public Bot() {
-        }
+        /**
+         * Create list of words with similar length.
+         * Tries to find guessed word.
+         */
 
-        public void startGame(){
+        public void setDictionary()  {
             dictionary = new ArrayList<>();
             wordsLength = code.getWordsLength();
             try (BufferedReader reader =
@@ -227,12 +285,18 @@ public class Wind {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+
+        public void startGame(){
+
             String checkableWord;
+            notation = new ArrayList<>();
+            notation.add(code.getCodeWord());
             char checkableChar;
-            System.out.println("before cycle");
             for(int i = 0; i < wordsLength && !endGame;){
                 checkableWord = dictionary.get(0);
                 checkableChar = checkableWord.charAt(i);
+                notation.add(Character.toString(checkableChar));
                 alphabet[(int)checkableChar-65].doClick();
                 if(mistake == false){
                     removeNotContain(checkableChar);
@@ -242,9 +306,74 @@ public class Wind {
                 else{
                     removeAllContains(checkableChar);
                 }
+                if(countOfTry<1 || code.checkWin()){
+                    break;
+                }
+            }
+            if(code.checkWin())  {
+                notation.add(Integer.toString(1));
+            }
+            else  {
+                notation.add(Integer.toString(0));
             }
         }
 
+        public void replayGame()  {
+            try {
+                String homeDirectory = "E:\\workspace\\Hangman\\src\\Try1\\Saved";
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setCurrentDirectory(new File(homeDirectory));
+                fileChooser.showOpenDialog(frame);
+                File file = fileChooser.getSelectedFile();
+                BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+                code.setCodeWord(bufferedReader.readLine());
+                String line;
+                while(true)
+                {
+                    line = bufferedReader.readLine();
+                    if(line != "0" && line != "1")  {
+                        char symbol = line.charAt(0);
+                        alphabet[(int)symbol-65].doClick();
+                    }
+                    if(countOfTry<1 || code.checkWin()){
+                        bufferedReader.close();
+                        break;
+                    }
+                }
+                code.checkWin();
+            }
+            catch(IOException e)  {
+                e.printStackTrace();
+            }
+        }
+
+        public void saveGame()  {
+            try {
+                String homeDirectory = "E:\\workspace\\Hangman\\src\\Try1\\Saved";
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setCurrentDirectory(new File(homeDirectory));
+                fileChooser.showSaveDialog(frame);
+                //if(fileChooser.)
+                File file = fileChooser.getSelectedFile();
+                if (file != null) {
+                    FileWriter fileWriter = new FileWriter(file);
+
+                    for (String temp : notation) {
+                        fileWriter.write(temp + "\n");
+                    }
+                    fileWriter.write("");
+                    fileWriter.close();
+                }
+            }
+            catch(IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        /**
+         * Remove all word in the list witch not contain the symbol.
+         * @param symbol the guessed letter
+         */
         public void removeNotContain(char symbol) {
             int i = 0;
             while (i < dictionary.size()) {
@@ -256,6 +385,11 @@ public class Wind {
             }
         }
 
+        /**
+         * Remove all word in the list witch not contain the symbol on the position.
+          * @param position witch must contain the symbol
+         * @param symbol the guessed letter
+         */
         public void removeNotContainInPosition(int position, char symbol) {
             int i = 0;
             while (i < dictionary.size()) {
@@ -267,6 +401,10 @@ public class Wind {
             }
         }
 
+        /**
+         * Remove all word in the list witch contain the symbol.
+         * @param symbol the guessed letter
+         */
         public void removeAllContains(char symbol) {
             int i = 0;
             while (i < dictionary.size()) {
@@ -277,7 +415,5 @@ public class Wind {
                 }
             }
         }
-
-
     }
 }
