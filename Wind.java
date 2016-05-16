@@ -1,3 +1,5 @@
+package Try1;
+
 import javax.swing.*;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
@@ -273,6 +275,22 @@ public class Wind {
       botItem.setEnabled(true);
     }
   }
+  
+  public void generateSaves() {
+    for(int i = 30308; i < 100000; i++) {
+      restart();
+      go();
+      endGame = false;
+      Bot bot = new Bot();
+      botFlag = true;
+      bot.setDictionary();
+      bot.startGame();
+      bot.saveWithoutAsking(i);
+      checkEndGame();
+      botFlag = false;
+      replayItem.setEnabled(true);
+    }
+  }
 
   /**
    * Discribe bot's behavior
@@ -313,7 +331,10 @@ public class Wind {
       notation = new ArrayList<>();
       notation.add(code.getCodeWord());
       char checkableChar;
-      for (int i = 0; i < wordsLength && !endGame;) {
+      for (int i = 0; i < wordsLength && !endGame && (dictionary != null);) {
+        if(dictionary.size() == 0){
+          break;
+        }
         checkableWord = dictionary.get(0);
         checkableChar = checkableWord.charAt(i);
         notation.add(Character.toString(checkableChar));
@@ -380,7 +401,6 @@ public class Wind {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setCurrentDirectory(new File(homeDirectory));
         fileChooser.showSaveDialog(frame);
-        // if(fileChooser.)
         File file = fileChooser.getSelectedFile();
         if (file != null) {
           FileWriter fileWriter = new FileWriter(file);
@@ -395,7 +415,29 @@ public class Wind {
         ex.printStackTrace();
       }
     }
+    
+    public void saveWithoutAsking(int i)  {
+      System.out.println("saveWithoyw");
+        try  {
+          String homeDirectory = "E:\\workspace\\Hangman\\src\\Try1\\Saved\\";
+          File file = new File(homeDirectory + i);
+          
+          if (file != null) {
+            FileWriter fileWriter = new FileWriter(file);
+  
+            for (String temp : notation) {
+              fileWriter.write(temp + "\n");
+            }
+            fileWriter.write("");
+            fileWriter.close();
+          }
+        } catch (IOException ex)  {
+          ex.printStackTrace();
+        }
+        
+    }
 
+    
     /**
      * Remove all word in the list witch not contain the symbol.
      *
