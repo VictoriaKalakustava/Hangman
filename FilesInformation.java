@@ -1,11 +1,9 @@
 package Try1;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Comparator;
 
 /**
  * Created by Victoria on 15.05.2016.
@@ -22,6 +20,10 @@ public class FilesInformation {
   public int getCountOfLetters() {
     return countOfLetters;
   }
+  
+  public boolean getWinFlag() {
+    return winFlag;
+  }
 
   public void printName() {
     System.out.println(nameOfFile + " -- " + countOfLetters);
@@ -33,8 +35,12 @@ public class FilesInformation {
         new FileReader("E:\\workspace\\Hangman\\src\\Try1\\Saved\\" + nameOfFile))) {
       String s;
       countOfLetters = -2;
-      while ((s = br.readLine()) != null) {
-        if (s == "0") {
+      while (true) {
+        s = br.readLine();
+        if(s == null) {
+          break;
+        }
+        if (s.equals("0")) {
           winFlag = false;
         } else {
           winFlag = true;
@@ -46,7 +52,6 @@ public class FilesInformation {
     } catch (IOException e) {
       e.printStackTrace();
     }
-
   }
 
 

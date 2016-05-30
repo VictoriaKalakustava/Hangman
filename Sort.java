@@ -1,6 +1,10 @@
 package Try1;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -16,11 +20,46 @@ public class Sort {
     files = new ArrayList<FilesInformation>();
     File directory = new File("E:\\workspace\\Hangman\\src\\Try1\\Saved");
     File[] fList = directory.listFiles();
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < fList.length; i++) {
       FilesInformation newFile = new FilesInformation();
       newFile.addName(fList[i].getName());
       newFile.setCountOfLetters();
       files.add(newFile);
+    }
+  }
+  
+  public void giveStatistic() {
+    findAllFiles();
+    FilesInformation[] fileMas = new FilesInformation[files.size()];
+    files.toArray(fileMas);
+    ScalaStatistic myStat = new ScalaStatistic();
+    int countOfLose = myStat.countOfLose(fileMas);
+//    int countOfLose = 0;
+//    for(FilesInformation info: fileMas){
+//      countOfLose = info.getWinFlag() == false ? countOfLose+1 : countOfLose;
+//    }
+    System.out.println("Count of fails: " + countOfLose);
+    System.out.println("Count of wins: " + (fileMas.length - countOfLose));
+  }
+  
+  public void explainRandomNotice() {
+    findAllFiles();
+    String choosedFile = String.valueOf((int)(Math.random()*files.size()));
+    try (BufferedReader br = new BufferedReader(
+        new FileReader("E:\\workspace\\Hangman\\src\\Try1\\Saved\\" + choosedFile))) {
+      String s;
+      ScalaExplainer explainer = new ScalaExplainer();
+      while (true) {
+        s = br.readLine();
+        if(s == null){
+          break;
+        }
+        System.out.println(explainer.explain(s));
+      }
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
   }
 

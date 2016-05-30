@@ -39,12 +39,15 @@ public class Wind {
     JMenuItem quitItem = new JMenuItem("Quit");
     botItem = new JMenuItem("Bot");
     replayItem = new JMenuItem("Open saved game");
+    JMenuItem statisticItem = new JMenuItem("Show statistic");
     quitItem.addActionListener(new QuitButtonListener());
     botItem.addActionListener(new BotListener());
     replayItem.addActionListener(new ReplayListener());
+    statisticItem.addActionListener(new StatisticListener());
     windowMenu.add(quitItem);
     windowMenu.add(botItem);
     windowMenu.add(replayItem);
+    windowMenu.add(statisticItem);
 
     viewMenu = new JMenu("View");
     JMenu lookAndFeel = new JMenu("LookAndFeel");
@@ -206,6 +209,14 @@ public class Wind {
       System.exit(0);
     }
   }
+  
+  class StatisticListener implements ActionListener {
+    public void actionPerformed(ActionEvent event) {
+      Sort mySort = new Sort();
+      mySort.giveStatistic();
+      mySort.explainRandomNotice();
+    }
+  }
 
   class BotListener implements ActionListener {
     public void actionPerformed(ActionEvent event) {
@@ -277,7 +288,7 @@ public class Wind {
   }
   
   public void generateSaves() {
-    for(int i = 30308; i < 100000; i++) {
+    for(int i = 33323; i < 100000; i++) {
       restart();
       go();
       endGame = false;
@@ -286,7 +297,7 @@ public class Wind {
       bot.setDictionary();
       bot.startGame();
       bot.saveWithoutAsking(i);
-      checkEndGame();
+    
       botFlag = false;
       replayItem.setEnabled(true);
     }
